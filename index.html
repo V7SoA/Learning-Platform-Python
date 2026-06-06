@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest — Learn to Code</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161b26;
+    --surface2: #1e2535;
+    --border: #2a3347;
+    --accent: #00e5a0;
+    --accent2: #7c5cfc;
+    --accent3: #ff6b6b;
+    --gold: #ffd60a;
+    --text: #e8eaf0;
+    --muted: #7a8499;
+    --success: #00e5a0;
+    --error: #ff6b6b;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+
+  /* ─── AUTH SCREEN ─── */
+  #auth-screen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; background: var(--bg);
+    background-image: radial-gradient(ellipse at 20% 50%, rgba(124,92,252,0.12) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, rgba(0,229,160,0.08) 0%, transparent 50%);
+  }
+  .auth-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 48px 40px; width: 420px; max-width: 95vw;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,160,0.05);
+  }
+  .logo { font-size: 2.4rem; font-weight: 700; margin-bottom: 8px; }
+  .logo span { color: var(--accent); }
+  .auth-box p.tagline { color: var(--muted); margin-bottom: 32px; font-size: 0.95rem; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--bg); border-radius: 10px; padding: 4px; }
+  .tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: 500; color: var(--muted); transition: all .2s; font-size: 0.95rem; }
+  .tab.active { background: var(--accent2); color: white; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: var(--font); font-size: 0.95rem; outline: none; transition: border-color .2s; }
+  .field input:focus { border-color: var(--accent2); }
+  .btn { width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 10px; font-family: var(--font); font-weight: 700; font-size: 1rem; cursor: pointer; transition: all .2s; margin-top: 8px; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,160,0.3); }
+  .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .auth-msg { font-size: 0.85rem; padding: 10px; border-radius: 8px; margin-top: 12px; display: none; }
+  .auth-msg.error { background: rgba(255,107,107,0.1); color: var(--error); border: 1px solid rgba(255,107,107,0.2); }
+  .auth-msg.success { background: rgba(0,229,160,0.1); color: var(--success); border: 1px solid rgba(0,229,160,0.2); }
+
+  /* ─── MAIN APP ─── */
+  #app { display: none; height: 100vh; flex-direction: row; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 20px 0; height: 100vh;
+  }
+  .sidebar-logo { padding: 0 20px 20px; font-size: 1.4rem; font-weight: 700; border-bottom: 1px solid var(--border); }
+  .sidebar-logo span { color: var(--accent); }
+  .nav-section { padding: 16px 12px 8px; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; cursor: pointer; color: var(--muted); transition: all .15s; font-size: 0.95rem; font-weight: 500; border-left: 2px solid transparent; margin: 1px 0; }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-item.active { color: var(--accent); background: rgba(0,229,160,0.06); border-left-color: var(--accent); }
+  .nav-item .ni { font-size: 1.1rem; width: 20px; text-align: center; }
+  .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .user-chip { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 34px; height: 34px; background: var(--accent2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: white; }
+  .user-info .uname { font-weight: 600; font-size: 0.9rem; }
+  .user-info .uxp { font-size: 0.75rem; color: var(--accent); }
+  .logout-btn { margin-top: 10px; width: 100%; padding: 8px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-family: var(--font); font-size: 0.8rem; transition: all .2s; }
+  .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+  /* ─── MAIN CONTENT ─── */
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .page { display: none; flex: 1; padding: 32px 40px; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 1.8rem; font-weight: 700; }
+  .page-header p { color: var(--muted); margin-top: 4px; }
+
+  /* ─── HOME / DASHBOARD ─── */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; flex: 1; min-width: 140px; }
+  .stat-card .sv { font-size: 2rem; font-weight: 700; }
+  .stat-card .sl { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .stat-card.gold .sv { color: var(--gold); }
+  .stat-card.green .sv { color: var(--accent); }
+  .stat-card.purple .sv { color: var(--accent2); }
+
+  /* ─── LANGUAGE GRID ─── */
+  .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .lang-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px 20px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+  }
+  .lang-card::before { content: ''; position: absolute; inset: 0; opacity: 0; background: linear-gradient(135deg, rgba(0,229,160,0.05), transparent); transition: opacity .2s; }
+  .lang-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .lang-card:hover::before { opacity: 1; }
+  .lang-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .lang-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .lang-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+  .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .5s; }
+  .progress-label { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+  /* ─── LESSON VIEW ─── */
+  #lesson-screen { display: none; position: fixed; inset: 0; z-index: 100; background: var(--bg); flex-direction: column; }
+  .lesson-header { display: flex; align-items: center; gap: 16px; padding: 16px 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .lesson-header .back { cursor: pointer; color: var(--muted); font-size: 1.3rem; padding: 6px; border-radius: 8px; transition: .2s; }
+  .lesson-header .back:hover { color: var(--text); background: var(--surface2); }
+  .lesson-title { font-weight: 700; font-size: 1.1rem; flex: 1; }
+  .xp-badge { background: rgba(0,229,160,0.1); color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(0,229,160,0.2); }
+  .progress-track { height: 6px; background: var(--surface2); }
+  .progress-track .fill { height: 100%; background: var(--accent2); transition: width .4s; }
+  .lesson-body { flex: 1; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; width: 100%; max-width: 600px; }
+  .q-type-badge { display: inline-block; font-size: 0.7rem; color: var(--accent2); background: rgba(124,92,252,0.1); border: 1px solid rgba(124,92,252,0.2); padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .q-text { font-size: 1.2rem; font-weight: 600; line-height: 1.5; margin-bottom: 28px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    padding: 14px 18px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; cursor: pointer; transition: all .15s; font-size: 0.95rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .option:hover { border-color: var(--accent2); background: rgba(124,92,252,0.06); }
+  .option.selected { border-color: var(--accent2); background: rgba(124,92,252,0.12); }
+  .option.correct { border-color: var(--success); background: rgba(0,229,160,0.1); color: var(--success); }
+  .option.wrong { border-color: var(--error); background: rgba(255,107,107,0.1); color: var(--error); }
+  .option-key { width: 28px; height: 28px; border-radius: 6px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+  .fill-input { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 14px 18px; color: var(--text); font-family: var(--mono); font-size: 1rem; outline: none; transition: border-color .2s; }
+  .fill-input:focus { border-color: var(--accent2); }
+  .feedback-box { margin-top: 20px; padding: 16px; border-radius: 12px; display: none; }
+  .feedback-box.correct { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.2); color: var(--success); }
+  .feedback-box.wrong { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.2); color: var(--error); }
+  .feedback-box .fb-title { font-weight: 700; margin-bottom: 4px; }
+  .feedback-box .fb-exp { font-size: 0.85rem; color: var(--muted); }
+  .lesson-footer { padding: 20px 32px; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .lesson-footer .btn { width: auto; padding: 12px 28px; }
+  .hearts { display: flex; gap: 4px; }
+  .heart { font-size: 1.2rem; }
+
+  /* ─── COMPILER ─── */
+  .compiler-wrap { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 120px); }
+  .compiler-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .lang-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-family: var(--font); font-size: 0.9rem; outline: none; cursor: pointer; }
+  .run-btn { padding: 10px 24px; background: var(--accent); color: #000; border: none; border-radius: 10px; font-family: var(--font); font-weight: 700; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; }
+  .run-btn:hover { box-shadow: 0 4px 16px rgba(0,229,160,0.3); transform: translateY(-1px); }
+  .run-btn.loading { opacity: 0.7; pointer-events: none; }
+  .editor-output { display: flex; gap: 16px; flex: 1; min-height: 0; }
+  .editor-panel, .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .panel-header { padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  #code-editor { flex: 1; background: transparent; border: none; color: var(--text); font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; padding: 16px; resize: none; outline: none; }
+  #code-output { flex: 1; padding: 16px; font-family: var(--mono); font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; overflow-y: auto; color: var(--text); }
+  #code-output.has-error { color: var(--error); }
+  .code-templates { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tmpl-btn { padding: 5px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: .15s; font-family: var(--font); }
+  .tmpl-btn:hover { border-color: var(--accent2); color: var(--text); }
+
+  /* ─── CHATBOT ─── */
+  .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 120px); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .msg { display: flex; gap: 12px; max-width: 80%; animation: fadeUp .3s ease; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .msg.bot .msg-avatar { background: linear-gradient(135deg, var(--accent2), var(--accent)); }
+  .msg.user .msg-avatar { background: var(--surface2); border: 1px solid var(--border); }
+  .msg-bubble { padding: 12px 16px; border-radius: 16px; font-size: 0.92rem; line-height: 1.6; }
+  .msg.bot .msg-bubble { background: var(--surface); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .msg.user .msg-bubble { background: var(--accent2); color: white; border-top-right-radius: 4px; }
+  .msg-bubble code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); font-size: 0.85em; }
+  .msg-bubble pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 8px 0; overflow-x: auto; }
+  .msg-bubble pre code { background: none; padding: 0; }
+  .chat-input-row { padding: 16px; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: 10px; }
+  .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 12px; font-family: var(--font); font-size: 0.95rem; outline: none; resize: none; max-height: 120px; transition: border-color .2s; }
+  .chat-input:focus { border-color: var(--accent2); }
+  .send-btn { padding: 12px 20px; background: var(--accent2); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1.1rem; transition: all .2s; }
+  .send-btn:hover { transform: scale(1.05); }
+  .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; }
+  .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .2s; }
+  .typing-dot:nth-child(3) { animation-delay: .4s; }
+
+  /* ─── LESSONS PAGE ─── */
+  .lesson-list { display: flex; flex-direction: column; gap: 12px; }
+  .lesson-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 22px; display: flex; align-items: center; gap: 16px; cursor: pointer;
+    transition: all .2s;
+  }
+  .lesson-item:hover { border-color: var(--accent2); transform: translateX(4px); }
+  .lesson-item.done { border-left: 3px solid var(--accent); }
+  .lesson-item.locked { opacity: 0.45; pointer-events: none; }
+  .lesson-num { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+  .lesson-item.done .lesson-num { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .lesson-meta { flex: 1; }
+  .lesson-meta .lt { font-weight: 600; }
+  .lesson-meta .ls { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .lesson-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .lesson-badge.code { background: rgba(124,92,252,0.15); color: var(--accent2); }
+  .lesson-badge.quiz { background: rgba(255,214,10,0.1); color: var(--gold); }
+  .lesson-badge.done-b { background: rgba(0,229,160,0.1); color: var(--accent); }
+
+  /* ─── COMPLETION SCREEN ─── */
+  #completion-screen { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+  .completion-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 48px 40px; text-align: center; max-width: 380px; width: 90%; animation: popIn .4s cubic-bezier(.34,1.56,.64,1); }
+  .completion-card .trophy { font-size: 4rem; margin-bottom: 16px; }
+  .completion-card h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+  .completion-card p { color: var(--muted); margin-bottom: 24px; }
+  .xp-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--accent); padding: 8px 20px; border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin-bottom: 24px; }
+  .score-ring { display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--accent); font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .loading-pulse { animation: pulse 1.5s infinite; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ─── BACK BUTTON ─── */
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; font-size: 0.9rem; margin-bottom: 24px; transition: color .2s; }
+  .back-link:hover { color: var(--accent); }
+
+  /* ─── STORY EXPLAINER SCREEN ─── */
+  /* ── VIDEO LESSON PLAYER ── */
+  #story-screen {
+    display: none; position: fixed; inset: 0; z-index: 110;
+    background: #070a0f; flex-direction: column; overflow: hidden;
+  }
+  /* top bar */
+  .vp-topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 28px; background: rgba(10,13,20,0.95);
+    border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
+  }
+  .vp-close { cursor: pointer; color: var(--muted); font-size: 1.2rem; padding: 6px 10px; border-radius: 8px; transition: .2s; }
+  .vp-close:hover { color: white; background: rgba(255,255,255,0.08); }
+  .vp-title { flex: 1; font-weight: 700; font-size: 1rem; color: white; }
+  .vp-lang { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+
+  /* slide stage */
+  .vp-stage {
+    flex: 1; display: flex; align-items: stretch; min-height: 0; position: relative; overflow: hidden;
+  }
+  /* left: avatar panel */
+/* old panel CSS removed */
+/* old robot CSS removed */
+  /* ── CHARACTER PANEL ── */
+  .vp-avatar-panel { width:280px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:0 0 16px; position:relative; border-right:1px solid rgba(255,255,255,0.05); overflow:hidden; }
+  .vp-avatar-bg { position:absolute; inset:0; transition:background 0.8s; }
+
+  /* Speech bubble */
+  .vp-speech-bubble { position:absolute; top:20px; left:50%; transform:translateX(-50%); background:white; color:#1a1a2e; border-radius:16px; padding:10px 16px; font-size:0.82rem; font-weight:700; min-width:160px; max-width:230px; text-align:center; line-height:1.4; z-index:20; opacity:0; transition:opacity 0.4s, transform 0.4s; pointer-events:none; box-shadow:0 4px 20px rgba(0,0,0,0.4); transform:translateX(-50%) translateY(-8px); }
+  .vp-speech-bubble.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .vp-bubble-tail { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:10px solid transparent; border-right:10px solid transparent; border-top:10px solid white; }
+
+  /* Character stage */
+  .vp-char-stage { position:relative; z-index:2; width:200px; height:240px; display:flex; align-items:flex-end; justify-content:center; }
+  .vp-char { position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+
+  /* Arms */
+  .vp-char-arm-l, .vp-char-arm-r { position:absolute; width:18px; height:60px; border-radius:9px; top:40px; z-index:1; transform-origin:top center; transition:background 0.5s; }
+  .vp-char-arm-l { left:-14px; background:#7c5cfc; animation:arm-idle-l 3s ease-in-out infinite; }
+  .vp-char-arm-r { right:-14px; background:#7c5cfc; animation:arm-idle-r 3s ease-in-out infinite; }
+
+  /* Body */
+  .vp-char-body { width:80px; height:90px; border-radius:20px; background:#7c5cfc; position:relative; z-index:2; display:flex; align-items:center; justify-content:center; transition:background 0.5s, transform 0.3s; animation:body-breathe 3s ease-in-out infinite; box-shadow:0 0 30px rgba(124,92,252,0.5); }
+
+  /* Face */
+  .vp-char-face { width:60px; height:50px; background:rgba(255,255,255,0.15); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; }
+  .vp-eye-l, .vp-eye-r { width:14px; height:14px; background:white; border-radius:50%; position:absolute; top:10px; overflow:hidden; animation:eye-blink 4s ease-in-out infinite; }
+  .vp-eye-l { left:8px; }
+  .vp-eye-r { right:8px; }
+  .vp-pupil { width:7px; height:7px; background:#1a1a2e; border-radius:50%; margin:3px auto; animation:pupil-move 5s ease-in-out infinite; }
+  .vp-mouth { width:24px; height:8px; border-radius:0 0 12px 12px; background:rgba(255,255,255,0.8); position:absolute; bottom:8px; left:50%; transform:translateX(-50%); transition:all 0.2s; }
+  .vp-mouth.talking { animation:mouth-talk 0.25s ease-in-out infinite alternate; }
+  .vp-mouth.happy { border-radius:0 0 16px 16px; height:12px; }
+
+  /* Legs */
+  .vp-char-legs { display:flex; gap:10px; margin-top:4px; }
+  .vp-leg-l, .vp-leg-r { width:20px; height:40px; border-radius:10px; background:#5a3fc0; transition:background 0.5s; }
+  .vp-leg-l { animation:leg-idle-l 3s ease-in-out infinite; }
+  .vp-leg-r { animation:leg-idle-r 3s ease-in-out infinite; }
+
+  /* Name + switcher */
+  .vp-char-info { position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:10px; }
+  .vp-speaker-name { font-size:0.82rem; font-weight:700; color:white; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:4px 16px; border-radius:20px; }
+  .vp-char-switcher { display:flex; gap:6px; }
+  .vp-char-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all 0.3s; border:2px solid transparent; }
+  .vp-char-dot.active { background:white; transform:scale(1.3); }
+  .vp-char-dot:hover { background:rgba(255,255,255,0.5); }
+  .vp-soundwave {
+    position: relative; z-index: 1; display: flex; align-items: center; gap: 3px; margin-top: 10px; height: 20px;
+  }
+  .vp-bar { width: 3px; border-radius: 2px; background: var(--accent2); animation: vp-wave 0.8s ease-in-out infinite; }
+  .vp-bar:nth-child(1){ height:6px; animation-delay:0s; }
+  .vp-bar:nth-child(2){ height:14px; animation-delay:.1s; }
+  .vp-bar:nth-child(3){ height:10px; animation-delay:.2s; }
+  .vp-bar:nth-child(4){ height:18px; animation-delay:.3s; }
+  .vp-bar:nth-child(5){ height:8px; animation-delay:.4s; }
+  .vp-bar:nth-child(6){ height:14px; animation-delay:.15s; }
+  .vp-bar:nth-child(7){ height:6px; animation-delay:.25s; }
+  .vp-soundwave.silent .vp-bar { animation: none; height: 3px; opacity: 0.3; }
+
+  /* right: content panel */
+  .vp-content {
+    flex: 1; display: flex; flex-direction: column; padding: 32px 40px;
+    background: linear-gradient(135deg, #0d1018 0%, #0a0d14 100%); overflow: hidden; position: relative;
+  }
+  .vp-slide-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+    margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .vp-slide-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .vp-slide-heading {
+    font-size: 1.7rem; font-weight: 700; line-height: 1.25; margin-bottom: 20px;
+    color: white; opacity: 0; transform: translateY(12px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .vp-slide-heading.visible { opacity: 1; transform: translateY(0); }
+  .vp-typewriter {
+    font-size: 1.05rem; line-height: 1.85; color: #b8c0d0; flex: 1;
+    font-family: var(--font); min-height: 80px;
+  }
+  .vp-typewriter .cursor {
+    display: inline-block; width: 2px; height: 1.1em;
+    background: var(--accent); margin-left: 2px; vertical-align: text-bottom;
+    animation: vp-blink .7s step-end infinite;
+  }
+  .vp-code-box {
+    background: #060810; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 18px 20px; font-family: var(--mono);
+    font-size: 0.88rem; line-height: 1.75; color: #c9d1d9;
+    margin-top: 16px; white-space: pre; overflow-x: auto;
+    border-left: 3px solid var(--accent2);
+  }
+  .vp-highlight { color: var(--accent); font-weight: 700; }
+
+  /* slide dots nav */
+  .vp-slide-nav {
+    position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .vp-snav-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15);
+    cursor: pointer; transition: all .3s;
+  }
+  .vp-snav-dot.active { background: var(--accent); transform: scale(1.4); }
+  .vp-snav-dot.done { background: rgba(0,229,160,0.4); }
+
+  /* bottom controls */
+  /* speech bubble */
+  .vp-bubble { position:absolute; bottom:160px; left:50%; transform:translateX(-50%); background:rgba(124,92,252,0.15); border:1px solid rgba(124,92,252,0.4); border-radius:14px; padding:8px 14px; font-size:0.78rem; color:var(--accent2); font-weight:600; white-space:nowrap; max-width:220px; text-align:center; white-space:normal; line-height:1.4; z-index:2; opacity:0; transition:opacity 0.4s; pointer-events:none; }
+  .vp-bubble::after { content:''; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid rgba(124,92,252,0.4); }
+  .vp-bubble.show { opacity:1; }
+  /* emoji reactions */
+  .vp-reaction { position:absolute; font-size:1.6rem; animation:vp-fly 1.5s ease-out forwards; pointer-events:none; z-index:10; }
+  @keyframes vp-fly { 0%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;transform:translateY(-80px) scale(1.4);} }
+  .vp-controls {
+    padding: 16px 28px; background: rgba(10,13,20,0.98);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+  }
+  .vp-progress-wrap { flex: 1; }
+  .vp-progress-track { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; cursor: pointer; }
+  .vp-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+  .vp-progress-label { font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+  .vp-ctrl-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0;
+  }
+  .vp-ctrl-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
+  .vp-play-btn {
+    width: 46px; height: 46px; border-radius: 50%; background: var(--accent);
+    border: none; color: #000; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0;
+  }
+  .vp-play-btn:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(0,229,160,0.4); }
+  .vp-quiz-btn {
+    padding: 11px 26px; background: var(--accent2); color: white; border: none;
+    border-radius: 10px; font-family: var(--font); font-weight: 700; font-size: 0.95rem;
+    cursor: pointer; transition: all .2s; display: none; flex-shrink: 0;
+  }
+  .vp-quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(124,92,252,0.4); }
+  .vp-quiz-btn.show { display: block; }
+  .vp-time { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); flex-shrink: 0; min-width: 60px; text-align:right; }
+
+  /* slide themes */
+  .slide-theme-purple .vp-slide-label { color: var(--accent2); }
+  .slide-theme-purple .vp-slide-dot { background: var(--accent2); }
+  .slide-theme-green .vp-slide-label { color: var(--accent); }
+  .slide-theme-green .vp-slide-dot { background: var(--accent); }
+  .slide-theme-yellow .vp-slide-label { color: var(--gold); }
+  .slide-theme-yellow .vp-slide-dot { background: var(--gold); }
+  .slide-theme-red .vp-slide-label { color: var(--accent3); }
+  .slide-theme-red .vp-slide-dot { background: var(--accent3); }
+
+  /* animations */
+  @keyframes vp-float { 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-12px) rotate(2deg);} }
+  @keyframes vp-talk { 0%{transform:scale(1) rotate(-2deg);} 100%{transform:scale(1.06) rotate(2deg);} }
+  @keyframes vp-wave { 0%,100%{transform:scaleY(1);} 50%{transform:scaleY(0.3);} }
+  @keyframes vp-blink { 50%{opacity:0;} }
+  @keyframes vp-slide-in { from{opacity:0;transform:translateX(30px);} to{opacity:1;transform:translateX(0);} }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes vp-think { 0%{transform:rotate(-6deg) scale(0.95);} 50%{transform:rotate(6deg) scale(1.05) translateY(-8px);} 100%{transform:rotate(-6deg) scale(0.95);} }
+  @keyframes vp-excited { 0%{transform:scale(1.1) rotate(-5deg) translateY(-4px);} 100%{transform:scale(1.2) rotate(5deg) translateY(-12px);} }
+
+  /* ── CHARACTER ANIMATIONS ── */
+  @keyframes body-breathe { 0%,100%{transform:scaleY(1) translateY(0);} 50%{transform:scaleY(1.04) translateY(-4px);} }
+  @keyframes arm-idle-l { 0%,100%{transform:rotate(10deg);} 50%{transform:rotate(-10deg);} }
+  @keyframes arm-idle-r { 0%,100%{transform:rotate(-10deg);} 50%{transform:rotate(10deg);} }
+  @keyframes arm-wave { 0%{transform:rotate(-10deg);} 25%{transform:rotate(-60deg);} 50%{transform:rotate(-20deg);} 75%{transform:rotate(-70deg);} 100%{transform:rotate(-10deg);} }
+  @keyframes arm-point { 0%,100%{transform:rotate(-50deg);} 50%{transform:rotate(-55deg);} }
+  @keyframes arm-jump { 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-80deg);} }
+  @keyframes leg-idle-l { 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(5deg);} }
+  @keyframes leg-idle-r { 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-5deg);} }
+  @keyframes leg-jump { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-20px) rotate(-15deg);} }
+  @keyframes char-jump { 0%,100%{transform:translateY(0);} 40%{transform:translateY(-30px);} 60%{transform:translateY(-25px);} }
+  @keyframes char-shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+  @keyframes eye-blink { 0%,90%,100%{transform:scaleY(1);} 95%{transform:scaleY(0.1);} }
+  @keyframes pupil-move { 0%,100%{transform:translate(0,0);} 25%{transform:translate(3px,-2px);} 50%{transform:translate(-3px,1px);} 75%{transform:translate(2px,2px);} }
+  @keyframes mouth-talk { 0%{height:4px; border-radius:0 0 4px 4px;} 100%{height:14px; border-radius:0 0 14px 14px;} }
+  @keyframes char-bounce { 0%,100%{transform:translateY(0) rotate(0deg);} 30%{transform:translateY(-15px) rotate(-3deg);} 60%{transform:translateY(-8px) rotate(2deg);} }
+  @keyframes body-excited { 0%{transform:rotate(-5deg) scale(1.05);} 100%{transform:rotate(5deg) scale(1.1);} }
+
+</style>
+</head>
+<body>
+
+<!-- ─── AUTH SCREEN ─── -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="logo">Code<span>Quest</span></div>
+    <p class="tagline">Learn programming, one lesson at a time. 🚀</p>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">Login</div>
+      <div class="tab" onclick="switchTab('register')">Sign Up</div>
+    </div>
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="field"><label>Username</label><input type="text" id="login-user" placeholder="your_username"></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="btn" onclick="doLogin()">Login</button>
+    </div>
+    <!-- Register Form -->
+    <div id="register-form" style="display:none">
+      <div class="field"><label>Username</label><input type="text" id="reg-user" placeholder="cool_coder"></div>
+      <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input type="password" id="reg-pass" placeholder="min 6 characters"></div>
+      <button class="btn" onclick="doRegister()">Create Account</button>
+    </div>
+    <div id="auth-msg" class="auth-msg"></div>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ─── -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Code<span>Quest</span></div>
+    <div class="nav-section">Learn</div>
+    <div class="nav-item active" onclick="showPage('home')" id="nav-home"><span class="ni">🏠</span> Home</div>
+    <div class="nav-item" onclick="showPage('learn')" id="nav-learn"><span class="ni">📚</span> Lessons</div>
+    <div class="nav-section">Tools</div>
+    <div class="nav-item" onclick="showPage('compiler')" id="nav-compiler"><span class="ni">⚡</span> Compiler</div>
+    <div class="nav-item" onclick="showPage('chat')" id="nav-chat"><span class="ni">🤖</span> AI Tutor</div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="uname" id="sidebar-name">...</div>
+          <div class="uxp" id="sidebar-xp">0 XP</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- HOME PAGE -->
+    <div class="page active" id="page-home">
+      <div class="page-header">
+        <h1>Welcome back! 👋</h1>
+        <p>Continue your coding journey</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card gold"><div class="sv" id="stat-xp">0</div><div class="sl">⭐ Total XP</div></div>
+        <div class="stat-card green"><div class="sv" id="stat-lessons">0</div><div class="sl">📖 Lessons Done</div></div>
+        <div class="stat-card purple"><div class="sv" id="stat-streak">0</div><div class="sl">🔥 Day Streak</div></div>
+      </div>
+      <div class="page-header" style="margin-bottom:16px"><h1 style="font-size:1.2rem">Choose a Language</h1></div>
+      <div class="lang-grid" id="lang-grid">
+        <div class="stat-card loading-pulse" style="height:140px">Loading languages...</div>
+      </div>
+    </div>
+
+    <!-- LEARN PAGE (Lessons List) -->
+    <div class="page" id="page-learn">
+      <div class="back-link" onclick="showPage('home')">← Back to Languages</div>
+      <div class="page-header">
+        <h1 id="learn-lang-name">Language</h1>
+        <p id="learn-lang-desc"></p>
+      </div>
+      <div class="lesson-list" id="lesson-list"></div>
+    </div>
+
+    <!-- COMPILER PAGE -->
+    <div class="page" id="page-compiler">
+      <div class="page-header">
+        <h1>⚡ Code Compiler</h1>
+        <p>Write and run Python or JavaScript code instantly</p>
+      </div>
+      <div class="compiler-wrap">
+        <div class="compiler-toolbar">
+          <select class="lang-select" id="lang-select" onchange="loadTemplate()">
+            <option value="python">🐍 Python</option>
+            <option value="javascript">⚡ JavaScript</option>
+            <option value="html">🎨 HTML/CSS</option>
+            <option value="sql">🗄️ SQL</option>
+          </select>
+          <button class="run-btn" onclick="runCode()" id="run-btn">▶ Run Code</button>
+          <button class="tmpl-btn" onclick="clearCode()">🗑 Clear</button>
+          <div class="code-templates">
+            <span style="font-size:0.8rem;color:var(--muted)">Templates:</span>
+            <button class="tmpl-btn" onclick="loadSnippet('hello')">Hello World</button>
+            <button class="tmpl-btn" onclick="loadSnippet('loop')">Loop</button>
+            <button class="tmpl-btn" onclick="loadSnippet('function')">Function</button>
+            <button class="tmpl-btn" onclick="loadSnippet('list')">List/Array</button>
+          </div>
+        </div>
+        <div class="editor-output">
+          <div class="editor-panel">
+            <div class="panel-header"><span>📝 Editor</span><span id="editor-lang-label">Python</span></div>
+            <textarea id="code-editor" spellcheck="false" placeholder="# Write your code here...
+print('Hello, CodeQuest!')"></textarea>
+          </div>
+          <div class="output-panel">
+            <div class="panel-header"><span>📤 Output</span><span id="run-time"></span></div>
+            <div id="code-output">Click ▶ Run Code to see output here...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div class="page" id="page-chat">
+      <div class="page-header" style="margin-bottom:0">
+        <h1>🤖 AI Tutor</h1>
+        <p>Ask me anything about programming!</p>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Hey there! I'm your CodeQuest AI tutor 🎉<br><br>I'm here to help you learn programming! Ask me anything — from "what is a variable?" to "explain recursion" or "help me fix my code".<br><br>What would you like to learn today? 🚀</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about coding..." onkeydown="chatKeyDown(event)"></textarea>
+          <button class="send-btn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─── VIDEO LESSON PLAYER ─── -->
+<div id="story-screen">
+  <!-- Top bar -->
+  <div class="vp-topbar">
+    <span class="vp-close" onclick="exitStory()">✕</span>
+    <span class="vp-title" id="vp-title">Lesson</span>
+    <span class="vp-lang" id="vp-lang">🐍 Python</span>
+  </div>
+
+  <!-- Stage -->
+  <div class="vp-stage">
+    <!-- Avatar Panel -->
+    <div class="vp-avatar-panel" id="vp-avatar-panel">
+      <div class="vp-avatar-bg" id="vp-avatar-bg"></div>
+
+      <!-- Speech bubble -->
+      <div class="vp-speech-bubble" id="vp-bubble">
+        <span id="vp-bubble-text">Hello! Let's learn! 👋</span>
+        <div class="vp-bubble-tail"></div>
+      </div>
+
+      <!-- Character stage -->
+      <div class="vp-char-stage" id="vp-char-stage">
+        <!-- Body parts built with CSS/SVG for animation -->
+        <div class="vp-char" id="vp-char">
+          <div class="vp-char-arm-l" id="vp-arm-l"></div>
+          <div class="vp-char-arm-r" id="vp-arm-r"></div>
+          <div class="vp-char-body" id="vp-body">
+            <div class="vp-char-face" id="vp-face">
+              <div class="vp-eye-l"><div class="vp-pupil"></div></div>
+              <div class="vp-eye-r"><div class="vp-pupil"></div></div>
+              <div class="vp-mouth" id="vp-mouth"></div>
+            </div>
+          </div>
+          <div class="vp-char-legs">
+            <div class="vp-leg-l"></div>
+            <div class="vp-leg-r"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Name + switcher -->
+      <div class="vp-char-info">
+        <div class="vp-speaker-name" id="vp-speaker-name">Alex 🤖</div>
+        <div class="vp-char-switcher">
+          <div class="vp-char-dot active" onclick="switchChar(0)" title="Alex the Robot"></div>
+          <div class="vp-char-dot" onclick="switchChar(1)" title="Luna the Alien"></div>
+          <div class="vp-char-dot" onclick="switchChar(2)" title="Kai the Astronaut"></div>
+          <div class="vp-char-dot" onclick="switchChar(3)" title="Nova the Student"></div>
+        </div>
+      </div>
+
+      <!-- Sound wave -->
+      <div class="vp-soundwave" id="vp-soundwave">
+        <div class="vp-bar"></div><div class="vp-bar"></div><div class="vp-bar"></div>
+        <div class="vp-bar"></div><div class="vp-bar"></div><div class="vp-bar"></div>
+        <div class="vp-bar"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="vp-content" id="vp-content">
+      <div class="vp-slide-label" id="vp-label">
+        <div class="vp-slide-dot"></div><span id="vp-label-text">Introduction</span>
+      </div>
+      <div class="vp-slide-heading" id="vp-heading">Loading...</div>
+      <div class="vp-typewriter" id="vp-typewriter"><span class="cursor"></span></div>
+      <div class="vp-code-box" id="vp-codebox" style="display:none"></div>
+    </div>
+
+    <!-- Slide nav dots -->
+    <div class="vp-slide-nav" id="vp-slide-nav"></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="vp-controls">
+    <button class="vp-ctrl-btn" onclick="vpPrevSlide()" title="Previous">⏮</button>
+    <button class="vp-play-btn" id="vp-play-btn" onclick="vpTogglePlay()">⏸</button>
+    <button class="vp-ctrl-btn" onclick="vpNextSlide()" title="Next">⏭</button>
+    <div class="vp-progress-wrap">
+      <div class="vp-progress-track"><div class="vp-progress-fill" id="vp-progress"></div></div>
+      <div class="vp-progress-label" id="vp-progress-label">Slide 1 of 4</div>
+    </div>
+    <div class="vp-time" id="vp-time">0:00</div>
+    <button class="vp-quiz-btn" id="vp-quiz-btn" onclick="beginQuiz()">Start Quiz →</button>
+  </div>
+</div>
+
+<!-- ─── LESSON SCREEN (Full-screen quiz) ─── -->
+<div id="lesson-screen" style="display:none;flex-direction:column">
+  <div class="lesson-header">
+    <span class="back" onclick="exitLesson()">✕</span>
+    <span class="lesson-title" id="ls-title">Lesson</span>
+    <span class="xp-badge" id="ls-xp">+10 XP</span>
+  </div>
+  <div class="progress-track"><div class="fill" id="ls-progress" style="width:0%"></div></div>
+  <div class="lesson-body">
+    <div class="question-card" id="question-card">
+      <div class="q-type-badge" id="q-type">MCQ</div>
+      <div class="q-text" id="q-text">Loading question...</div>
+      <div id="q-area"></div>
+      <div class="feedback-box" id="feedback-box">
+        <div class="fb-title" id="fb-title"></div>
+        <div class="fb-exp" id="fb-exp"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-footer">
+    <div class="hearts" id="hearts">❤️ ❤️ ❤️</div>
+    <button class="btn" id="check-btn" onclick="checkAnswer()">Check Answer</button>
+  </div>
+</div>
+
+<!-- ─── COMPLETION SCREEN ─── -->
+<div id="completion-screen">
+  <div class="completion-card">
+    <div class="trophy">🏆</div>
+    <h2>Lesson Complete!</h2>
+    <p>Great work! You're making real progress.</p>
+    <div class="score-ring" id="comp-score">0/0</div>
+    <div class="xp-pill" id="comp-xp">+10 XP earned</div>
+    <button class="btn" onclick="closeCompletion()">Continue Learning</button>
+  </div>
+</div>
+
+<script>
+const API = '';
+let currentUser = null;
+let currentLang = null;
+let lessonData = null;
+let currentQ = 0;
+let score = 0;
+let hearts = 3;
+let answered = false;
+
+// ─── AUTH ───────────────────────────────────────────────
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active', i===(t==='login'?0:1)));
+  document.getElementById('login-form').style.display = t==='login'?'':'none';
+  document.getElementById('register-form').style.display = t==='register'?'':'none';
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('auth-msg');
+  el.className = 'auth-msg ' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!u || !p) return showAuthMsg('Please fill in all fields', 'error');
+  const res = await apiFetch('/api/auth/login', {method:'POST', body:{username:u, password:p}});
+  if (res.error) return showAuthMsg(res.error, 'error');
+  currentUser = res;
+  enterApp();
+}
+
+async function doRegister() {
+  const u = document.getElementById('reg-user').value.trim();
+  const e = document.getElementById('reg-email').value.trim();
+  const p = document.getElementById('reg-pass').value;
+  if (!u || !e || !p) return showAuthMsg('Please fill in all fields', 'error');
+  const res = await apiFetch('/api/auth/register', {method:'POST', body:{username:u, email:e, password:p}});
+  if (res.error) return showAuthMsg(res.error, 'error');
+  currentUser = res;
+  enterApp();
+}
+
+async function doLogout() {
+  await apiFetch('/api/auth/logout', {method:'POST'});
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function enterApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  updateSidebar();
+  loadDashboard();
+  showPage('home');
+}
+
+function updateSidebar() {
+  if (!currentUser) return;
+  document.getElementById('sidebar-name').textContent = currentUser.username || '?';
+  document.getElementById('sidebar-avatar').textContent = (currentUser.username||'?')[0].toUpperCase();
+  document.getElementById('sidebar-xp').textContent = (currentUser.xp || 0) + ' XP';
+}
+
+// ─── NAVIGATION ─────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const nav = document.getElementById('nav-'+page);
+  if (nav) nav.classList.add('active');
+}
+
+// ─── DASHBOARD ──────────────────────────────────────────
+async function loadDashboard() {
+  const [langs, dash] = await Promise.all([
+    apiFetch('/api/lessons/languages'),
+    apiFetch('/api/progress/dashboard')
+  ]);
+  if (dash && !dash.error) {
+    document.getElementById('stat-xp').textContent = dash.user?.xp ?? 0;
+    document.getElementById('stat-lessons').textContent = dash.lessons_completed ?? 0;
+    document.getElementById('stat-streak').textContent = dash.user?.streak ?? 0;
+    currentUser = {...currentUser, ...dash.user};
+    updateSidebar();
+  }
+  if (langs && !langs.error) renderLanguages(langs, dash?.languages || []);
+}
+
+function renderLanguages(langs, progress) {
+  const grid = document.getElementById('lang-grid');
+  const progressMap = {};
+  (progress||[]).forEach(p => progressMap[p.slug] = p);
+
+  grid.innerHTML = langs.map(l => {
+    const p = progressMap[l.slug] || {};
+    const total = l.total_lessons || 1;
+    const done = p.completed_lessons || 0;
+    const pct = Math.round((done/total)*100);
+    return `<div class="lang-card" onclick="openLanguage('${l.slug}')">
+      <div class="lang-icon">${l.icon}</div>
+      <div class="lang-name">${l.name}</div>
+      <div class="lang-desc">${l.description}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${done}/${total} lessons${pct===100?' ✅':''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── LANGUAGE / LESSONS ─────────────────────────────────
+async function openLanguage(slug) {
+  showPage('learn');
+  document.getElementById('lesson-list').innerHTML = '<div class="loading-pulse" style="padding:20px">Loading lessons...</div>';
+  const data = await apiFetch(`/api/lessons/language/${slug}`);
+  if (data.error) return;
+  currentLang = data.language;
+  document.getElementById('learn-lang-name').textContent = data.language.icon + ' ' + data.language.name;
+  document.getElementById('learn-lang-desc').textContent = data.language.description;
+
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = data.lessons.map((l, i) => {
+    const locked = i > 0 && !data.lessons[i-1].completed;
+    const done = l.completed;
+    const badge = done ? `<span class="lesson-badge done-b">✓ Done</span>`
+                       : `<span class="lesson-badge ${l.lesson_type}">${l.lesson_type.toUpperCase()}</span>`;
+    return `<div class="lesson-item ${done?'done':''} ${locked?'locked':''}" onclick="startLesson(${l.id})">
+      <div class="lesson-num">${done?'✓':i+1}</div>
+      <div class="lesson-meta">
+        <div class="lt">${l.title}</div>
+        <div class="ls">+${l.xp_reward} XP</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// ─── LESSON ENGINE ──────────────────────────────────────
+let pendingLessonData = null;
+let vpSlides = [];
+let vpCurrent = 0;
+let vpPlaying = false;
+let vpTimer = null;
+let vpTyping = null;
+let vpElapsed = 0;
+let vpClockTimer = null;
+
+async function startLesson(lessonId) {
+  pendingLessonData = null;
+  vpSlides = []; vpCurrent = 0; vpPlaying = false; vpElapsed = 0;
+  clearInterval(vpTimer); clearTimeout(vpTyping); clearInterval(vpClockTimer);
+
+  document.getElementById('story-screen').style.display = 'flex';
+  document.getElementById('vp-heading').textContent = 'Loading lesson...';
+  document.getElementById('vp-typewriter').innerHTML = '<span class="cursor"></span>';
+  document.getElementById('vp-codebox').style.display = 'none';
+  document.getElementById('vp-quiz-btn').classList.remove('show');
+  document.getElementById('vp-soundwave').classList.add('silent');
+
+  const [lessonRes, storyRes] = await Promise.all([
+    apiFetch(`/api/lessons/lesson/${lessonId}`),
+    apiFetch(`/api/lessons/lesson/${lessonId}/story`)
+  ]);
+
+  if (!lessonRes || lessonRes.error) {
+    document.getElementById('story-screen').style.display = 'none';
+    alert('Could not load lesson: ' + (lessonRes?.error || 'Unknown error'));
+    return;
+  }
+
+  pendingLessonData = lessonRes;
+  document.getElementById('vp-title').textContent = lessonRes.lesson.title;
+  document.getElementById('vp-lang').textContent = storyRes.language || 'Code';
+
+  vpSlides = buildSlides(storyRes.story || '');
+  buildNavDots();
+  showSlide(0, true);
+  vpStartPlay();
+}
+
+function buildSlides(raw) {
+  const markers = [
+    { key: '[STORY]',    next: '[CONCEPT]', label: '📖 Story',      theme: 'slide-theme-purple' },
+    { key: '[CONCEPT]',  next: '[CODE]',    label: '💡 Concept',    theme: 'slide-theme-green'  },
+    { key: '[CODE]',     next: '[TAKEAWAY]',label: '💻 Code',       theme: 'slide-theme-yellow' },
+    { key: '[TAKEAWAY]', next: null,        label: '🌟 Key Takeaway',theme: 'slide-theme-red'   }
+  ];
+  const slides = [];
+  for (let i = 0; i < markers.length; i++) {
+    const m = markers[i];
+    const start = raw.indexOf(m.key);
+    if (start === -1) continue;
+    const contentStart = start + m.key.length;
+    const nextIdx = m.next ? raw.indexOf(m.next) : -1;
+    let content = raw.slice(contentStart, nextIdx !== -1 ? nextIdx : raw.length).trim();
+
+    // Split code from text
+    let text = content, code = '';
+    const tripleBacktick = '`'.repeat(3);
+    const codeStart = content.indexOf(tripleBacktick);
+    if (codeStart !== -1) {
+      const codeEnd = content.indexOf(tripleBacktick, codeStart + 3);
+      if (codeEnd !== -1) {
+        const rawCode = content.slice(codeStart + 3, codeEnd);
+        code = rawCode.replace(/^[a-z]*\n/, '').trim();
+        text = (content.slice(0, codeStart) + content.slice(codeEnd + 3)).trim();
+      }
+    }
+
+    // Use first sentence as heading, rest as body
+    const sentences = text.split(/[.!?]\s+/).filter(s => s.trim().length > 0);
+    const heading = sentences[0] || m.label;
+    const body = sentences.slice(1).join(' ').trim() || text;
+
+    slides.push({ label: m.label, theme: m.theme, heading, body, code });
+  }
+  if (!slides.length) {
+    slides.push({ label: '📖 Lesson', theme: 'slide-theme-purple', heading: 'Welcome to this lesson!', body: 'Get ready to learn something great. Follow along and then take the quiz!', code: '' });
+  }
+  return slides;
+}
+
+function buildNavDots() {
+  const nav = document.getElementById('vp-slide-nav');
+  nav.innerHTML = vpSlides.map((_, i) => `<div class="vp-snav-dot" onclick="vpJumpTo(${i})"></div>`).join('');
+}
+
+
+// ─── CHARACTER SYSTEM ───────────────────────────────────
+const CHARACTERS = [
+  {
+    name: 'Alex 🤖', bodyColor: '#7c5cfc', legColor: '#5a3fc0',
+    bg: 'radial-gradient(ellipse at 50% 90%, rgba(124,92,252,0.3) 0%, rgba(10,13,20,0.95) 70%)',
+    glow: 'rgba(124,92,252,0.6)', faceIcon: '🤖',
+    bubbleColor: '#7c5cfc', bubbleText: 'white'
+  },
+  {
+    name: 'Luna 👾', bodyColor: '#00e5a0', legColor: '#00a872',
+    bg: 'radial-gradient(ellipse at 50% 90%, rgba(0,229,160,0.25) 0%, rgba(10,13,20,0.95) 70%)',
+    glow: 'rgba(0,229,160,0.6)', faceIcon: '👾',
+    bubbleColor: '#00e5a0', bubbleText: '#0a0d14'
+  },
+  {
+    name: 'Kai 🚀', bodyColor: '#ff6b6b', legColor: '#cc4444',
+    bg: 'radial-gradient(ellipse at 50% 90%, rgba(255,107,107,0.25) 0%, rgba(10,13,20,0.95) 70%)',
+    glow: 'rgba(255,107,107,0.6)', faceIcon: '🚀',
+    bubbleColor: '#ff6b6b', bubbleText: 'white'
+  },
+  {
+    name: 'Nova ✨', bodyColor: '#ffd60a', legColor: '#c9a800',
+    bg: 'radial-gradient(ellipse at 50% 90%, rgba(255,214,10,0.2) 0%, rgba(10,13,20,0.95) 70%)',
+    glow: 'rgba(255,214,10,0.5)', faceIcon: '✨',
+    bubbleColor: '#ffd60a', bubbleText: '#0a0d14'
+  }
+];
+let currentChar = 0;
+
+function switchChar(idx) {
+  currentChar = idx;
+  applyChar(idx);
+  document.querySelectorAll('.vp-char-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  // bounce animation on switch
+  doGesture('jump');
+}
+
+function applyChar(idx) {
+  const c = CHARACTERS[idx];
+  document.getElementById('vp-speaker-name').textContent = c.name;
+  document.getElementById('vp-avatar-bg').style.background = c.bg;
+  const body = document.getElementById('vp-body');
+  body.style.background = c.bodyColor;
+  body.style.boxShadow = '0 0 30px ' + c.glow;
+  document.getElementById('vp-arm-l').style.background = c.bodyColor;
+  document.getElementById('vp-arm-r').style.background = c.bodyColor;
+  document.querySelectorAll('.vp-leg-l, .vp-leg-r').forEach(l => l.style.background = c.legColor);
+  // bubble color
+  const bub = document.getElementById('vp-bubble');
+  bub.style.background = c.bubbleColor;
+  bub.style.color = c.bubbleText;
+  const tail = bub.querySelector('.vp-bubble-tail');
+  if (tail) tail.style.borderTopColor = c.bubbleColor;
+}
+
+// ── Gesture system ──
+function doGesture(type) {
+  const char = document.getElementById('vp-char');
+  const armL = document.getElementById('vp-arm-l');
+  const armR = document.getElementById('vp-arm-r');
+  const body = document.getElementById('vp-body');
+  const mouth = document.getElementById('vp-mouth');
+
+  // reset
+  armL.style.animation = '';
+  armR.style.animation = '';
+  char.style.animation = '';
+  body.style.animation = 'body-breathe 3s ease-in-out infinite';
+  mouth.classList.remove('talking','happy');
+
+  if (type === 'wave') {
+    armR.style.animation = 'arm-wave 1s ease-in-out 2';
+    armL.style.animation = 'arm-idle-l 3s ease-in-out infinite';
+    char.style.animation = 'char-bounce 1s ease-in-out';
+    mouth.classList.add('happy');
+  } else if (type === 'point') {
+    armR.style.animation = 'arm-point 0.5s ease-in-out infinite';
+    armL.style.animation = 'arm-idle-l 3s ease-in-out infinite';
+    char.style.animation = 'char-bounce 2s ease-in-out infinite';
+  } else if (type === 'jump') {
+    char.style.animation = 'char-jump 0.6s ease-in-out';
+    armL.style.animation = 'arm-jump 0.6s ease-in-out';
+    armR.style.animation = 'arm-jump 0.6s ease-in-out';
+    mouth.classList.add('happy');
+  } else if (type === 'shake') {
+    char.style.animation = 'char-shake 0.5s ease-in-out';
+  } else if (type === 'excited') {
+    body.style.animation = 'body-excited 0.2s ease-in-out infinite alternate';
+    armL.style.animation = 'arm-jump 0.3s ease-in-out infinite alternate';
+    armR.style.animation = 'arm-jump 0.3s ease-in-out infinite alternate';
+    char.style.animation = 'char-jump 0.5s ease-in-out 2';
+    mouth.classList.add('happy');
+  } else if (type === 'talk') {
+    armR.style.animation = 'arm-point 1s ease-in-out infinite';
+    mouth.classList.add('talking');
+  } else if (type === 'think') {
+    armR.style.animation = 'arm-point 2s ease-in-out infinite';
+    armL.style.animation = 'arm-idle-l 1s ease-in-out infinite';
+    char.style.animation = 'char-bounce 3s ease-in-out infinite';
+  }
+}
+
+function startTalkingAnimation() {
+  document.getElementById('vp-mouth').classList.add('talking');
+  document.getElementById('vp-soundwave').classList.remove('silent');
+}
+function stopTalkingAnimation() {
+  document.getElementById('vp-mouth').classList.remove('talking');
+  document.getElementById('vp-mouth').classList.add('happy');
+  document.getElementById('vp-soundwave').classList.add('silent');
+  // reset arms after gesture
+  setTimeout(() => {
+    document.getElementById('vp-arm-l').style.animation = 'arm-idle-l 3s ease-in-out infinite';
+    document.getElementById('vp-arm-r').style.animation = 'arm-idle-r 3s ease-in-out infinite';
+    document.getElementById('vp-mouth').classList.remove('happy');
+  }, 1000);
+}
+
+// slide index → gesture
+const slideGestures = ['wave', 'point', 'excited', 'jump'];
+const slideBubbles = [
+  "Ooh, let me tell you a story! 📖",
+  "Now here's the cool part! 💡",
+  "Look at this code! 👀",
+  "Never forget this! 🌟"
+];
+
+// ── Speech synthesis with word-sync ──
+let vpWordTimer = null;
+
+function vpSpeak(fullText, wordsEl) {
+  if (!window.speechSynthesis) {
+    // No TTS — just show all text instantly
+    if (wordsEl) wordsEl.innerHTML = fullText + '<span class="cursor"></span>';
+    return;
+  }
+  window.speechSynthesis.cancel();
+  clearInterval(vpWordTimer);
+
+  const words = fullText.split(' ');
+  let wordIdx = 0;
+
+  // Show words one by one timed to speech rate
+  // Average speech rate ~150 words/min = 400ms per word
+  // We update faster (250ms) so text stays slightly ahead of voice
+  if (wordsEl) {
+    wordsEl.innerHTML = '<span class="cursor"></span>';
+    vpWordTimer = setInterval(() => {
+      if (wordIdx >= words.length) {
+        clearInterval(vpWordTimer);
+        if (wordsEl) wordsEl.innerHTML = fullText + '<span class="cursor"></span>';
+        return;
+      }
+      wordIdx++;
+      if (wordsEl) wordsEl.innerHTML = words.slice(0, wordIdx).join(' ') + '<span class="cursor"></span>';
+    }, 260);
+  }
+
+  const utt = new SpeechSynthesisUtterance(fullText);
+  utt.rate = 0.88;
+  utt.pitch = 1.05;
+  utt.volume = 1;
+
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes('Google US') || v.name === 'Google US English')
+    || voices.find(v => v.name.includes('Google') && v.lang === 'en-US')
+    || voices.find(v => v.lang === 'en-US' && !v.localService)
+    || voices.find(v => v.lang === 'en-US')
+    || voices[0];
+  if (preferred) utt.voice = preferred;
+
+  utt.onstart = () => { startTalkingAnimation(); };
+  utt.onend = () => {
+    clearInterval(vpWordTimer);
+    if (wordsEl) wordsEl.innerHTML = fullText + '<span class="cursor"></span>';
+    stopTalkingAnimation();
+  };
+  utt.onerror = () => {
+    clearInterval(vpWordTimer);
+    if (wordsEl) wordsEl.innerHTML = fullText + '<span class="cursor"></span>';
+    stopTalkingAnimation();
+  };
+
+  window.speechSynthesis.speak(utt);
+}
+
+function vpStopSpeech() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  clearInterval(vpWordTimer);
+  stopTalkingAnimation();
+}
+
+// ── Bubble messages per slide ──
+const bubbleMessages = [
+  'Let me tell you a story... 📖',
+  'Here is the key concept! 💡',
+  'Watch this code carefully... 👀',
+  'Remember this forever! 🌟'
+];
+
+// ── Reaction emojis per slide ──
+const slideEmojis = ['🚀','✨','💻','🎉'];
+
+function spawnReaction(emoji) {
+  const panel = document.getElementById('vp-avatar-panel');
+  const el = document.createElement('div');
+  el.className = 'vp-reaction';
+  el.textContent = emoji;
+  el.style.left = (80 + Math.random() * 80) + 'px';
+  el.style.bottom = '200px';
+  panel.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+function showSlide(idx, instant) {
+  if (idx < 0 || idx >= vpSlides.length) return;
+  vpCurrent = idx;
+  const s = vpSlides[idx];
+  const content = document.getElementById('vp-content');
+
+  // Theme
+  content.className = 'vp-content ' + s.theme;
+
+  // Label
+  document.getElementById('vp-label-text').textContent = s.label;
+
+  // Heading animate in
+  const heading = document.getElementById('vp-heading');
+  heading.classList.remove('visible');
+  heading.textContent = s.heading;
+  setTimeout(() => heading.classList.add('visible'), 80);
+
+  // Code box
+  const codebox = document.getElementById('vp-codebox');
+  if (s.code) { codebox.style.display = 'block'; codebox.textContent = s.code; }
+  else { codebox.style.display = 'none'; }
+
+  // Text display — controlled by speech
+  clearTimeout(vpTyping);
+  clearInterval(vpWordTimer);
+  const tw = document.getElementById('vp-typewriter');
+  tw.innerHTML = instant ? (s.body + '<span class="cursor"></span>') : '<span class="cursor"></span>';
+
+  // Nav dots
+  document.querySelectorAll('.vp-snav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+    d.classList.toggle('done', i < idx);
+  });
+
+  // Progress bar
+  const pct = ((idx + 1) / vpSlides.length) * 100;
+  document.getElementById('vp-progress').style.width = pct + '%';
+  document.getElementById('vp-progress-label').textContent = 'Slide ' + (idx + 1) + ' of ' + vpSlides.length;
+
+  // Quiz button on last slide
+  if (idx === vpSlides.length - 1) {
+    setTimeout(() => document.getElementById('vp-quiz-btn').classList.add('show'), 3000);
+  } else {
+    document.getElementById('vp-quiz-btn').classList.remove('show');
+  }
+
+  // ── Character gesture + bubble ──
+  if (!instant) {
+    doGesture(slideGestures[idx] || 'talk');
+    const bubble = document.getElementById('vp-bubble');
+    document.getElementById('vp-bubble-text').textContent = slideBubbles[idx] || 'Keep going! 💪';
+    bubble.classList.add('show');
+    setTimeout(() => bubble.classList.remove('show'), 3500);
+    setTimeout(() => spawnReaction(slideEmojis[idx] || '⭐'), 500);
+  }
+  const wave = document.getElementById('vp-soundwave');
+  wave.classList.remove('silent');
+
+  // ── Speak + sync words to voice ──
+  if (!instant) {
+    const toSpeak = s.heading + '. ' + s.body;
+    vpSpeak(toSpeak, tw);
+  } else {
+    // instant: just show all words, no speech
+    tw.innerHTML = s.body + '<span class="cursor"></span>';
+  }
+}
+
+// typeText removed — replaced by word-sync speech
+
+function vpStartPlay() {
+  vpPlaying = true;
+  document.getElementById('vp-play-btn').textContent = '⏸';
+  showSlide(0, false);
+  scheduleNext();
+  vpClockTimer = setInterval(() => {
+    vpElapsed++;
+    const m = Math.floor(vpElapsed / 60), s = vpElapsed % 60;
+    document.getElementById('vp-time').textContent = m + ':' + String(s).padStart(2, '0');
+  }, 1000);
+}
+
+function scheduleNext() {
+  clearInterval(vpTimer);
+  if (!vpPlaying) return;
+  const s = vpSlides[vpCurrent];
+  // Estimate speech duration: ~130 words per minute at rate 0.88
+  const wordCount = (s.heading + ' ' + s.body).split(' ').length;
+  const estimatedMs = Math.max(5000, (wordCount / 130) * 60000 + 1500);
+  vpTimer = setTimeout(() => {
+    if (!vpPlaying) return;
+    if (vpCurrent < vpSlides.length - 1) { showSlide(vpCurrent + 1, false); scheduleNext(); }
+    else { vpPlaying = false; document.getElementById('vp-play-btn').textContent = '▶'; }
+  }, estimatedMs);
+}
+
+function vpTogglePlay() {
+  if (vpPlaying) {
+    vpPlaying = false;
+    clearInterval(vpTimer); clearTimeout(vpTyping);
+    vpStopSpeech();
+    document.getElementById('vp-play-btn').textContent = '▶';
+  } else {
+    vpPlaying = true;
+    document.getElementById('vp-play-btn').textContent = '⏸';
+    showSlide(vpCurrent, false);
+    scheduleNext();
+  }
+}
+
+function vpNextSlide() {
+  clearInterval(vpTimer); clearTimeout(vpTyping);
+  if (vpCurrent < vpSlides.length - 1) { showSlide(vpCurrent + 1, false); if (vpPlaying) scheduleNext(); }
+}
+
+function vpPrevSlide() {
+  clearInterval(vpTimer); clearTimeout(vpTyping);
+  if (vpCurrent > 0) { showSlide(vpCurrent - 1, false); if (vpPlaying) scheduleNext(); }
+}
+
+function vpJumpTo(idx) {
+  clearInterval(vpTimer); clearTimeout(vpTyping);
+  showSlide(idx, false);
+  if (vpPlaying) scheduleNext();
+}
+
+function exitStory() {
+  clearInterval(vpTimer); clearTimeout(vpTyping); clearInterval(vpClockTimer);
+  vpPlaying = false; vpStopSpeech();
+  document.getElementById('story-screen').style.display = 'none';
+  pendingLessonData = null;
+}
+
+function beginQuiz() {
+  clearInterval(vpTimer); clearTimeout(vpTyping); clearInterval(vpClockTimer);
+  vpPlaying = false; vpStopSpeech();
+  if (!pendingLessonData) return;
+  document.getElementById('story-screen').style.display = 'none';
+  const data = pendingLessonData;
+  lessonData = data; currentQ = 0; score = 0; hearts = 3; answered = false;
+  document.getElementById('ls-title').textContent = data.lesson.title;
+  document.getElementById('ls-xp').textContent = '+' + data.lesson.xp_reward + ' XP';
+  document.getElementById('lesson-screen').style.display = 'flex';
+  renderQuestion(); updateHearts();
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// exitStory defined above
+
+// beginQuiz defined above
+
+function renderQuestion() {
+  const q = lessonData.questions[currentQ];
+  const total = lessonData.questions.length;
+  answered = false;
+
+  document.getElementById('ls-progress').style.width = (currentQ/total*100) + '%';
+  document.getElementById('q-type').textContent = q.question_type.toUpperCase();
+  document.getElementById('q-text').textContent = q.question_text;
+  document.getElementById('feedback-box').style.display = 'none';
+  document.getElementById('check-btn').textContent = 'Check Answer';
+  document.getElementById('check-btn').disabled = false;
+
+  const area = document.getElementById('q-area');
+  if (q.question_type === 'mcq') {
+    let opts = [];
+    try {
+      opts = Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]');
+    } catch(e) { opts = []; }
+    let optHtml = '<div class="options">';
+    opts.forEach((o, i) => {
+      const safeText = String(o).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      optHtml += '<div class="option" onclick="selectOption(this)" data-idx="' + i + '"><div class="option-key">' + String.fromCharCode(65+i) + '</div><span>' + safeText + '</span></div>';
+    });
+    optHtml += '</div>';
+    area.innerHTML = optHtml;
+  } else if (q.question_type === 'fill') {
+    area.innerHTML = "<input class='fill-input' id='fill-answer' placeholder='Type your answer here...' onkeydown='if(event.key==\'Enter\')checkAnswer()'>";
+  } else if (q.question_type === 'code') {
+    area.innerHTML = '<textarea class="fill-input" id="fill-answer" rows="5" placeholder="# Write your code here..." style="font-family:var(--mono)"></textarea><p style="font-size:0.8rem;color:var(--muted);margin-top:8px">Tip: Switch to the Compiler tab to run your code and test it!</p>';
+  }
+}
+
+function selectOption(el) {
+  if (answered) return;
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function checkAnswer() {
+  if (answered) { nextQuestion(); return; }
+  const q = lessonData.questions[currentQ];
+  let userAns = '';
+  let correct = false;
+
+  if (q.question_type === 'mcq') {
+    const sel = document.querySelector('.option.selected');
+    if (!sel) return;
+    // Get options array
+    let opts = []; try { opts = Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'); } catch(e) { opts = []; }
+    const selectedIdx = parseInt(sel.dataset.idx);
+    const selectedText = opts[selectedIdx] || '';
+    // Compare selected text to correct_answer (case-insensitive trim)
+    correct = selectedText.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
+    // Highlight correct and wrong options
+    document.querySelectorAll('.option').forEach(o => {
+      const oIdx = parseInt(o.dataset.idx);
+      const oText = (opts[oIdx] || '').trim().toLowerCase();
+      const isCorrect = oText === q.correct_answer.trim().toLowerCase();
+      if (isCorrect) o.classList.add('correct');
+      else if (o.classList.contains('selected') && !correct) o.classList.add('wrong');
+    });
+  } else {
+    const inp = document.getElementById('fill-answer');
+    if (!inp) return;
+    userAns = inp.value.trim().toLowerCase();
+    correct = userAns.includes(q.correct_answer.toLowerCase());
+    inp.style.borderColor = correct ? 'var(--success)' : 'var(--error)';
+  }
+
+  answered = true;
+  if (correct) score++;
+  else { hearts--; updateHearts(); }
+
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box ' + (correct?'correct':'wrong');
+  document.getElementById('fb-title').textContent = correct ? '✅ Correct! Great job!' : '❌ Not quite right';
+  document.getElementById('fb-exp').textContent = q.explanation || '';
+  fb.style.display = 'block';
+  document.getElementById('check-btn').textContent = currentQ < lessonData.questions.length - 1 ? 'Continue →' : 'Finish Lesson';
+
+  if (hearts <= 0) { setTimeout(() => failLesson(), 1500); }
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= lessonData.questions.length) { finishLesson(); return; }
+  renderQuestion();
+}
+
+function updateHearts() {
+  document.getElementById('hearts').textContent = '❤️'.repeat(hearts) + '🖤'.repeat(Math.max(0, 3-hearts));
+}
+
+async function finishLesson() {
+  document.getElementById('lesson-screen').style.display = 'none';
+  const total = lessonData.questions.length;
+  document.getElementById('comp-score').textContent = score + '/' + total;
+  document.getElementById('comp-xp').textContent = '+' + lessonData.lesson.xp_reward + ' XP earned';
+  document.getElementById('completion-screen').style.display = 'flex';
+
+  const res = await apiFetch(`/api/lessons/lesson/${lessonData.lesson.id}/complete`, {method:'POST', body:{score}});
+  if (res && res.total_xp !== undefined) {
+    currentUser.xp = res.total_xp;
+    document.getElementById('stat-xp').textContent = res.total_xp;
+    document.getElementById('sidebar-xp').textContent = res.total_xp + ' XP';
+  }
+}
+
+function failLesson() {
+  document.getElementById('lesson-screen').style.display = 'none';
+  document.getElementById('comp-score').textContent = score + '/' + lessonData.questions.length;
+  document.getElementById('comp-xp').textContent = 'Keep practicing!';
+  document.querySelector('.completion-card .trophy').textContent = '💪';
+  document.querySelector('.completion-card h2').textContent = 'Keep Going!';
+  document.querySelector('.completion-card p').textContent = 'You ran out of hearts, but every attempt helps you learn!';
+  document.getElementById('completion-screen').style.display = 'flex';
+}
+
+function exitLesson() {
+  document.getElementById('lesson-screen').style.display = 'none';
+}
+
+function closeCompletion() {
+  document.getElementById('completion-screen').style.display = 'none';
+  document.querySelector('.completion-card .trophy').textContent = '🏆';
+  document.querySelector('.completion-card h2').textContent = 'Lesson Complete!';
+  document.querySelector('.completion-card p').textContent = "Great work! You're making real progress.";
+  loadDashboard();
+  if (currentLang) openLanguage(currentLang.slug);
+}
+
+// ─── COMPILER ───────────────────────────────────────────
+const TEMPLATES = {
+  python: {
+    hello: '# Hello World in Python\nprint("Hello, World!")\nprint("Welcome to CodeQuest! 🚀")',
+    loop: '# For loop example\nfor i in range(1, 6):\n    print(f"Number: {i}")\n\n# While loop\ncount = 0\nwhile count < 3:\n    print(f"Count: {count}")\n    count += 1',
+    function: '# Function example\ndef greet(name):\n    return f"Hello, {name}!"\n\nresult = greet("CodeQuest")\nprint(result)',
+    list: '# List example\nfruits = ["apple", "banana", "cherry"]\nfor fruit in fruits:\n    print(fruit)\n\nprint(f"Total: {len(fruits)} fruits")'
+  },
+  javascript: {
+    hello: '// Hello World in JavaScript\nconsole.log("Hello, World!");\nconsole.log("Welcome to CodeQuest! 🚀");',
+    loop: '// For loop\nfor (let i = 1; i <= 5; i++) {\n  console.log(`Number: ${i}`);\n}\n\n// While loop\nlet count = 0;\nwhile (count < 3) {\n  console.log(`Count: ${count}`);\n  count++;\n}',
+    function: '// Arrow function\nconst greet = (name) => {\n  return `Hello, ${name}!`;\n};\n\nconsole.log(greet("CodeQuest"));',
+    list: '// Array example\nconst fruits = ["apple", "banana", "cherry"];\nfruits.forEach(fruit => console.log(fruit));\nconsole.log(`Total: ${fruits.length} fruits`);'
+  },
+  html: {
+    hello: '<!-- HTML preview coming soon -->\n<!-- Try this in a .html file:\n<h1>Hello, World!</h1>\n<p>Welcome to CodeQuest!</p>\n-->',
+    loop: '<!-- HTML has no loops, use JavaScript -->', function: '', list: ''
+  },
+  sql: {
+    hello: '-- SQL Example\nSELECT "Hello World" AS greeting;',
+    loop: '-- SQL does not have loops', function: '-- SQL uses stored procedures for functions',
+    list: '-- Select from table\nSELECT * FROM users LIMIT 5;'
+  }
+};
+
+function loadTemplate() {
+  const lang = document.getElementById('lang-select').value;
+  document.getElementById('editor-lang-label').textContent = lang.charAt(0).toUpperCase()+lang.slice(1);
+  document.getElementById('code-editor').value = TEMPLATES[lang]?.hello || '';
+  document.getElementById('code-output').textContent = 'Click ▶ Run Code to see output...';
+  document.getElementById('code-output').className = '';
+}
+
+function loadSnippet(type) {
+  const lang = document.getElementById('lang-select').value;
+  document.getElementById('code-editor').value = TEMPLATES[lang]?.[type] || '';
+}
+
+function clearCode() {
+  document.getElementById('code-editor').value = '';
+  document.getElementById('code-output').textContent = '';
+}
+
+async function runCode() {
+  const code = document.getElementById('code-editor').value;
+  const lang = document.getElementById('lang-select').value;
+  const btn = document.getElementById('run-btn');
+  const out = document.getElementById('code-output');
+
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Running...';
+  out.textContent = 'Running your code...';
+  out.className = 'loading-pulse';
+
+  const start = Date.now();
+  const res = await apiFetch('/api/compiler/run', {method:'POST', body:{code, language:lang}});
+  const elapsed = Date.now() - start;
+
+  btn.classList.remove('loading');
+  btn.textContent = '▶ Run Code';
+  out.className = '';
+  document.getElementById('run-time').textContent = elapsed + 'ms';
+
+  if (res.error && res.output) {
+    out.textContent = res.output + '\n\nErrors:\n' + res.error;
+    out.className = 'has-error';
+  } else if (res.error) {
+    out.textContent = res.error;
+    out.className = 'has-error';
+  } else {
+    out.textContent = res.output || '(No output)';
+    out.className = '';
+  }
+}
+
+// ─── CHATBOT ────────────────────────────────────────────
+function chatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  input.style.height = '';
+
+  appendMsg('user', msg);
+  const typing = appendTyping();
+
+  const res = await apiFetch('/api/chat/send', {method:'POST', body:{message:msg}});
+  typing.remove();
+
+  if (res.reply) appendMsg('bot', res.reply);
+  else appendMsg('bot', '⚠️ Could not get a response. Make sure Ollama is running!');
+}
+
+function appendMsg(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${role==='bot'?'🤖':'👤'}</div>
+    <div class="msg-bubble">${formatMsg(text)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function formatMsg(text) {
+  // Convert code blocks
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Bold
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Newlines
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+// ─── API HELPER ─────────────────────────────────────────
+async function apiFetch(url, opts = {}) {
+  try {
+    const res = await fetch(API + url, {
+      method: opts.method || 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    return await res.json();
+  } catch (e) {
+    console.error('API error:', e);
+    return { error: 'Network error' };
+  }
+}
+
+// ─── INIT ───────────────────────────────────────────────
+// Preload speech voices
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+// Init default character
+applyChar(0);
+doGesture('wave');
+
+(async () => {
+  const me = await apiFetch('/api/auth/me');
+  if (me && !me.error) {
+    currentUser = me;
+    enterApp();
+  }
+  loadTemplate(); // load default compiler template
+})();
+</script>
+</body>
+</html>
